@@ -1,0 +1,17 @@
+{
+    "name": "Debojyoti/PdoConnect",
+    "description": "Make database connection",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Debojyoti",
+            "email": "dsahapersonal@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Debojyoti\\PdoConnect\\" : "src"
+        }
+    }
+}
