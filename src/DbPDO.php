@@ -1,6 +1,6 @@
 <?php
 
-namespace dsahapersonal\pdoconnect;
+namespace Debojyoti\PdoConnect;
 
 class DbPDO {
 
