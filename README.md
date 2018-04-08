@@ -1,6 +1,6 @@
-#How to use in your project
+# How to use in your project
 
-##Include in your composer.json
+## Include in your composer.json
 
     "repositories": [
     {
@@ -17,7 +17,7 @@
         "Debojyoti/PdoConnect": "dev-master"
     }
 
-#Usage
+# Usage
 
     use Debojyoti\PdoConnect\Handler;
 
