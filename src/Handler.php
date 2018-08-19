@@ -13,7 +13,7 @@ Description: Handle complex database queries easily through single line code.
 
 class Handler extends DbPDO
 {
-    private $pdo;
+       private $pdo;
 
     #   Optional parameter ($db_info) can be passed to switch database and user accounts
     #   $db_info = ['key'=>'value'], expecting "username", "password", "hostname", "database"
@@ -53,9 +53,9 @@ class Handler extends DbPDO
         $last_call = $trace[1];
         $called_from = $last_call['function'];
 
-        $type2_methods = ["getData", "getDataOr", "updateData", "getCount"];
+        $type2_methods = ["getData", "updateData", "getCount"];
 
-        if (($called_from == "getData" || $called_from == "getDataOr")&& $type==1) {
+        if ($called_from == "getData" && $type==1) {
 
             //  Fetch the column names to be searched
             $i = 0;
@@ -158,12 +158,7 @@ class Handler extends DbPDO
                 }
             }
             if (isset($AND_list)) {
-                if($called_from == "getDataOr") {
-                    $str .= "WHERE ".implode(' OR ', $AND_list);    
-                } else {
-                    $str .= "WHERE ".implode(' AND ', $AND_list);
-                }
-                
+                $str .= "WHERE ".implode(' AND ', $AND_list);
             }
             // create AND string
             if (isset($obj)) {
@@ -218,7 +213,7 @@ class Handler extends DbPDO
             $posts = $this->runQuery($query,$obj);
             return true;
         }
-        catch(PDOException $e) {
+        catch(\PDOException $e) {
             return false;
         }
     }
@@ -231,7 +226,7 @@ class Handler extends DbPDO
             $posts = $this->runQuery($query, $obj);
             return true;
         }
-        catch(PDOException $e) {
+        catch(\PDOException $e) {
             return false;
         }
     }
@@ -260,36 +255,7 @@ class Handler extends DbPDO
             //print_r($post);
             return $post;
         }
-        catch(PDOException $e) {
-            return false;
-        }
-    }
-
-    #   To execute SELECT query with nammed parameters
-    public function getDataOr($tname, array $data = null, array $result_format = null, array $limit = null)
-    {
-        try {
-            $query="SELECT ";
-            $this->prepareData($result_format, 1, $query);  //  1
-            $query .= " FROM ".$tname." ";
-        
-            $obj = $this->prepareData($data, 2, $query);    //  2
-            //print_r($obj);
-            if ($limit && count($limit)>0) {
-                $count = $limit[0];
-                
-                $query .= " LIMIT ".$count;
-                if (isset($limit[1])) {
-                    $offset = $limit[1];
-                    $query .= " OFFSET ".$offset;
-                } 
-            }
-            // echo $query;
-            $post = $this->runQuery($query, $obj);
-            //print_r($post);
-            return $post;
-        }
-        catch(PDOException $e) {
+        catch(\PDOException $e) {
             return false;
         }
     }
@@ -319,7 +285,7 @@ class Handler extends DbPDO
             }
 
         }
-        catch(PDOException $e) {
+        catch(\PDOException $e) {
             return false;
         }
     }
@@ -337,11 +303,10 @@ class Handler extends DbPDO
             //print_r($post);
             return $post[0]["COUNT(*)"];
         }
-        catch(PDOException $e) {
+        catch(\PDOException $e) {
             return false;
         }   
         return true;
-        //return count($this->getData($tname,$columns));
     }
 
     public function getRows($tname, array $columns = null) 
@@ -367,42 +332,29 @@ class Handler extends DbPDO
                 return $this->insertData($tname, $data);
             }
         }
-        catch(PDOException $e) {
+        catch(\PDOException $e) {
             return false;
         }
-    }      
-
-    public function getRowSData($tname) {
-
+    }    
+    
+    #   Run queries directly 
+    public function query($quertyString ) {
         try {
-            //  Check whether table exists or not
-            $query = "SELECT count(*) FROM information_schema.columns WHERE table_name = '$tname'";
-            $posts = $this->runQuery($query);
-            foreach ($posts as $post)  {
-                $no =  $post["count(*)"];
-            }
-            if ($no == 0) {
-                return false;   //  Table does not exists
-            }
-            else {
-                //  Fetch column names
-                $query = "SELECT `COLUMN_NAME` 
-                    FROM `INFORMATION_SCHEMA`.`COLUMNS` 
-                    WHERE `TABLE_SCHEMA`='$this->database' 
-                    AND `TABLE_NAME`='$tname'";
-                    
-                $posts = $this->runQuery($query);
-                $i = 0;
-                foreach ($posts as $post)  {
-                    $cols[] = $post["COLUMN_NAME"];
+            // Get the database action from string
+            $action = explode(" ", $quertyString)[0];
+            $action = strtolower($action);
+            $whiteListActions = ['select','update','insert'];
+            // Check if action is allowed
+            if(in_array($action, $whiteListActions)) {
+                $stmt = $this->pdo->query($quertyString);
+                if ($action == 'select') {
+                    return $stmt->fetchAll();    
                 }
-                return $cols;
+                return $stmt->rowCount();
             }
-        }
-        catch(PDOException $e) {
+        } catch(\PDOException $e) {
             return false;
         }
-    } 
-
+    }
 
 }
